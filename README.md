@@ -1,4 +1,4 @@
-# BinaryCNN
+# BinaryDeepECG
 Binary CNN for ECG Authentication
 
 Database: PTB Diagnostic ECG Database
