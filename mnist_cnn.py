@@ -16,8 +16,8 @@ from keras.optimizers import SGD, Adam, RMSprop
 from keras.callbacks import LearningRateScheduler
 from keras.utils import np_utils
 
-from binary_ops import binary_tanh as binary_tanh_op
-from binary_layers import BinaryDense, BinaryConv2D
+from binary_layer/binary_ops import binary_tanh as binary_tanh_op
+from binary_layer/binary_layers import BinaryDense, BinaryConv2D
 
 
 def binary_tanh(x):
