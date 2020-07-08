@@ -3,7 +3,7 @@ import numpy as np
 
 from keras import backend as K
 
-from keras.layers import InputSpec, Layer, Dense, Conv2D
+from keras.layers import InputSpec, Layer, Dense, Conv2D, Conv1D
 from keras import constraints
 from keras import initializers
 
