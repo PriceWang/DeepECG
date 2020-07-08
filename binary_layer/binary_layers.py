@@ -96,7 +96,7 @@ class BinaryConv2D(Conv2D):
     References: 
     "BinaryNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1" [http://arxiv.org/abs/1602.02830]
     '''
-    def __init__(self, filters, kernel_lr_multiplier='Glorot', 
+    def __init__(self, filters, kernel_size, kernel_lr_multiplier='Glorot', 
                  bias_lr_multiplier=None, H=1., **kwargs):
         super(BinaryConv2D, self).__init__(filters, **kwargs)
         self.H = H
@@ -189,7 +189,7 @@ class BinaryConv1D(Conv1D):
     References: 
     "BinaryNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1" [http://arxiv.org/abs/1602.02830]
     '''
-    def __init__(self, filters, kernel_lr_multiplier='Glorot', 
+    def __init__(self, filters, kernel_size, kernel_lr_multiplier='Glorot', 
                  bias_lr_multiplier=None, H=1., **kwargs):
         super(BinaryConv1D, self).__init__(filters, **kwargs)
         self.H = H
@@ -209,7 +209,7 @@ class BinaryConv1D(Conv1D):
         input_dim = input_shape[channel_axis]
         kernel_shape = self.kernel_size + (input_dim, self.filters)
             
-        base = self.kernel_size[0] * self.kernel_size[1]
+        base = self.kernel_size
         if self.H == 'Glorot':
             nb_input = int(input_dim * base)
             nb_output = int(self.filters * base)
