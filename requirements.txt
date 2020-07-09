@@ -1,0 +1,8 @@
+tensorflow
+wfdb
+progress
+matplotlib
+numpy
+pandas
+keras
+sklearn
