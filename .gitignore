@@ -1,2 +1,7 @@
 .vscode/*
+
 ptb-diagnostic-ecg-database-1.0.0/*
+
+PTB_dataset.csv
+
+best_weights.hdf5
