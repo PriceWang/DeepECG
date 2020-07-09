@@ -1,8 +1,6 @@
 import os
 import wfdb
 from wfdb import processing
-import random
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from progress.bar import Bar
