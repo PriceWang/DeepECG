@@ -209,7 +209,7 @@ class BinaryConv1D(Conv1D):
         input_dim = input_shape[channel_axis]
         kernel_shape = self.kernel_size + (input_dim, self.filters)
             
-        base = self.kernel_size
+        base = self.kernel_size[0]
         if self.H == 'Glorot':
             nb_input = int(input_dim * base)
             nb_output = int(self.filters * base)
