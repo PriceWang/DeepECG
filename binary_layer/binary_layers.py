@@ -98,7 +98,7 @@ class BinaryConv2D(Conv2D):
     '''
     def __init__(self, filters, kernel_size, kernel_lr_multiplier='Glorot', 
                  bias_lr_multiplier=None, H=1., **kwargs):
-        super(BinaryConv2D, self).__init__(filters, **kwargs)
+        super(BinaryConv2D, self).__init__(filters, kernel_size, **kwargs)
         self.H = H
         self.kernel_lr_multiplier = kernel_lr_multiplier
         self.bias_lr_multiplier = bias_lr_multiplier
@@ -191,7 +191,7 @@ class BinaryConv1D(Conv1D):
     '''
     def __init__(self, filters, kernel_size, kernel_lr_multiplier='Glorot', 
                  bias_lr_multiplier=None, H=1., **kwargs):
-        super(BinaryConv1D, self).__init__(filters, **kwargs)
+        super(BinaryConv1D, self).__init__(filters, kernel_size, **kwargs)
         self.H = H
         self.kernel_lr_multiplier = kernel_lr_multiplier
         self.bias_lr_multiplier = bias_lr_multiplier
