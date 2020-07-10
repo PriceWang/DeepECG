@@ -8,9 +8,7 @@ Binary CNN for ECG Authentication
 
 - Database
 
-    PTB Diagnostic ECG Database
-
-    <https://physionet.org/content/ptbdb/1.0.0/>
+    [PTB Diagnostic ECG Database](https://physionet.org/content/ptbdb/1.0.0/)
 
     Download and unzip it to the root directory. The structure should be like this:
 
@@ -45,7 +43,7 @@ python DataGeneration.py
 
 Or you can download the pre-processed dataset from the link:
 
-<https://drive.google.com/file/d/1XcaSe04qPCxuQQyD_WXPDmCOV8rqBboe/view?usp=sharing>
+[PTB Processed Dataset](https://drive.google.com/file/d/1XcaSe04qPCxuQQyD_WXPDmCOV8rqBboe/view?usp=sharing>)
 
 Put it on the root directory:
 
@@ -67,3 +65,9 @@ python ModelCreation.py
 This model has been trained and uploaded as 'model.h5'
 
 ### Step 3: Authentication
+
+To execute authentication section, run:
+
+```cmd
+python Authentication.py
+```
