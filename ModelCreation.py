@@ -21,7 +21,7 @@ from sklearn import metrics
 
 # Split data into training and test partitions
 def createSet(dataset):
-    x_cols = [col for col in dataset.columns if col != 'label']
+    x_cols = [col for col in dataset.columns if (col != 'label' and col != 'record')]
     X_data = dataset[x_cols].values
     X_data = np.reshape(X_data, (X_data.shape[0], X_data.shape[1], -1))
     Y_data = dataset['label'].values
