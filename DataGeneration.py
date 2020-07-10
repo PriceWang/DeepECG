@@ -10,7 +10,7 @@ def dataGeneration(data_path, window_size_half, max_bpm):
     patient_folders = [i for i in os.listdir(data_path) if (not i.startswith('.') and i.startswith('patient'))]
 
     # initialize dataset
-    dataset = pd.DataFrame(columns=['label'])
+    dataset = pd.DataFrame(columns=['label', 'record'])
 
     Bar.check_tty = False
     bar = Bar('Processing', max=len(patient_folders), fill='#', suffix='%(percent)d%%')
@@ -32,7 +32,7 @@ def dataGeneration(data_path, window_size_half, max_bpm):
             corrected_qrs_inds = processing.correct_peaks(signal[:,0], peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)
 
             # a temp dataframe to store one record
-            record_temp = pd.DataFrame(columns=['label'])
+            record_temp = pd.DataFrame(columns=['label', 'record'])
 
             # select 30 pieces, discard the first peak and the last peak
             if len(corrected_qrs_inds)<32:
@@ -51,6 +51,7 @@ def dataGeneration(data_path, window_size_half, max_bpm):
 
                 record_temp = record_temp.append(pd.DataFrame(sig.T), ignore_index=True, sort=False)
                 record_temp.iloc[:, record_temp.columns.get_loc('label')] = patient_name
+                record_temp.iloc[:, record_temp.columns.get_loc('record')] = record_name
 
             # remove outliers
             if record_temp.shape[0]<3:
