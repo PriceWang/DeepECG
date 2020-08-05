@@ -1,19 +1,29 @@
-import os
-import random
 import numpy as np
 import pandas as pd
 from progress.bar import Bar
+from binary_layer.binary_ops import binarize
 
 import keras
 
+BNN = True
+
 def rebuildModel(model_path):
+
     model = keras.models.load_model(model_path)
 
     layer_outputs = []
     for layer in model.layers:
         if layer.name.startswith('dropout'):
             break
-        layer_outputs.append(layer.output)
+
+        if BNN and layer.name.startswith('conv1d'):
+            weights = layer.get_weights()
+            for i in range(len(weights)):
+                weights[i] = binarize(weights[i])
+            layer.set_weights(weights)
+
+        output = layer.output
+        layer_outputs.append(output)
 
     model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
     model_template.summary()
@@ -47,8 +57,8 @@ def databaseGeneration(model, user_database):
 def authentication(model, database, login):
     login_data = model.predict(login)[-1]
 
-    threshold = 10
-    score = 0
+    # threshold = 13.5
+    threshold = 200000
 
     for login_part in login_data:
         for database_part in database:
@@ -59,6 +69,7 @@ def authentication(model, database, login):
 
 
 if __name__ == "__main__":
+
     model_path = 'model.h5'
     dataset_path = 'PTB_dataset.csv'
 
