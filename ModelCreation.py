@@ -26,7 +26,7 @@ def createSet(dataset):
     X_data = np.reshape(X_data, (X_data.shape[0], X_data.shape[1], -1))
     Y_data = dataset['label'].values
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, random_state=0, test_size = 0.30, train_size = 0.7)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data, random_state=0, test_size = 0.3, train_size = 0.7)
 
     num_classes = len(np.unique(Y_data))
 
@@ -43,18 +43,6 @@ def binaryConvertion(num_classes, Y_train, Y_test):
     Y_test_wide = np_utils.to_categorical(Y_test_num, num_classes)
 
     return Y_train_wide, Y_test_num, Y_test_wide
-
-def show(X_train, Y_train):
-    pltsize = 4
-    row_images = 2
-    col_images = 2
-    plt.figure(figsize=(col_images*pltsize, row_images*pltsize))
-
-    for i in range(row_images * col_images):
-        i_rand = random.randint(0, X_train.shape[0]-1)
-        plt.subplot(row_images, col_images, i+1)
-        plt.plot(X_train[i_rand])
-        plt.title(str(Y_train[i_rand]))
 
 def modelling(X_train, Y_train_wide):
     # 1-D CNN
@@ -95,7 +83,7 @@ def modelling(X_train, Y_train_wide):
     model.summary()
 
     # training
-    batch_size = 32
+    batch_size = 16
     epochs = 20
 
     # set up the callback to save the best model based on validaion data
@@ -130,53 +118,17 @@ def modelling(X_train, Y_train_wide):
 
     return model
 
-def evaluation(model, X_test, Y_test, Y_test_num):
+def evaluation(model, X_test, Y_test_num):
 
     # make a set of predictions for the test data
-    pred = model.predict_classes(X_test)
+    pred = np.argmax(model.predict(X_test), axis=-1)
 
     # print performance details
     print(metrics.classification_report(Y_test_num, pred))
-
-    # Draw some examples of correct classifications
-    pltsize = 4
-    row_images = 2
-    col_images = 2
-    plt.figure(figsize=(col_images*pltsize, row_images*pltsize))
-    maxtoshow = row_images * col_images
-
-    predictions = pred.reshape(-1)
-    corrects = predictions == Y_test_num
-
-    count = 0
-    while range(len(corrects)):
-        if count>=maxtoshow:
-            break
-        i_rand = random.randint(0, X_test.shape[0]-1)
-        if corrects[i_rand]:        
-            plt.subplot(row_images,col_images,count+1)
-            plt.plot(X_test[i_rand])
-            plt.title(Y_test[i_rand])
-            count = count+1
-
-    # Draw some examples of wrong classifications
-    plt.figure(figsize=(col_images*pltsize, row_images*pltsize))
-
-    count = 0
-    while range(len(corrects)):
-        if count>=maxtoshow:
-            break
-        i_rand = random.randint(0, X_test.shape[0]-1)
-        if ~corrects[i_rand]:        
-            plt.subplot(row_images,col_images,count+1)
-            plt.plot(X_test[i_rand])
-            plt.title(Y_test[i_rand])
-            count = count+1
 
 if __name__ == "__main__":
     dataset = pd.read_csv('PTB_dataset.csv')
     num_classes, X_train, X_test, Y_train, Y_test = createSet(dataset)
     Y_train_wide, Y_test_num, Y_test_wide = binaryConvertion(num_classes, Y_train, Y_test)
-    show(X_train, Y_train)
     model = modelling(X_train, Y_train_wide)
-    evaluation(model, X_test, Y_test, Y_test_num)
+    evaluation(model, X_test, Y_test_num)

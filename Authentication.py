@@ -20,23 +20,19 @@ def rebuildModel(model_path):
 
     return model_template
 
-def dataProcessing(data_path, dataset_path):
-    dataset = pd.read_csv('PTB_dataset.csv')
+def dataProcessing(dataset_path):
+    dataset = pd.read_csv(dataset_path)
 
     patients = pd.unique(dataset['label'])
 
     users = np.random.choice(patients, int(np.floor(len(patients) / 2)), replace=False)
 
     test_user = dataset.loc[dataset['label'].isin(users)]
-    test_intruder = dataset.loc[~dataset['label'].isin(users)]
 
-    user_database = pd.DataFrame()
-    for group in test_user.groupby('label'):
-        records = list(group[1].groupby('record'))
-        irand = random.randint(0, len(records))
-        for i in range(irand):
-            record = records[i][1]
-            user_database = user_database.append(record, ignore_index=True, sort=False)
+    user_database = test_user.groupby('record').head(1)
+
+    test_user = test_user.sample(n=100, replace=False)
+    test_intruder = (dataset.loc[~dataset['label'].isin(users)]).sample(n=100, replace=False)
 
     return user_database, test_user, test_intruder
 
@@ -51,33 +47,23 @@ def databaseGeneration(model, user_database):
 def authentication(model, database, login):
     login_data = model.predict(login)[-1]
 
-    threshold = 15
+    threshold = 10
     score = 0
 
     for login_part in login_data:
         for database_part in database:
             if np.linalg.norm(login_part - database_part) < threshold:
-                score = score + 1
-                break
+                return True
 
-    if score > len(login_data) * 0.7:
-        return True
-    else:
-        return False
+    return False
 
 
 if __name__ == "__main__":
     model_path = 'model.h5'
-    data_path = 'ptb-diagnostic-ecg-database-1.0.0/'
     dataset_path = 'PTB_dataset.csv'
 
     model = rebuildModel(model_path)
-    user_database, test_user, test_intruder = dataProcessing(data_path, dataset_path)
-
-    print(user_database.shape)
-    print(test_user.shape)
-    print(test_intruder.shape)
-
+    user_database, test_user, test_intruder = dataProcessing(dataset_path)
 
     database = databaseGeneration(model, user_database)
 
@@ -89,6 +75,20 @@ if __name__ == "__main__":
     for user in test_user.groupby('record'):
         login = user[1].drop(columns=['label', 'record']).values        
         if authentication(model, database, login):
+            score = score + 1
+        bar.next()
+    bar.finish()
+
+    print('Accuracy : {:.2%}'.format(score / attempt_number))
+
+    attempt_number = len(test_intruder['record'].unique())
+    score = 0
+
+    Bar.check_tty = False
+    bar = Bar('Verifying', max=attempt_number, fill='#', suffix='%(percent)d%%')
+    for user in test_intruder.groupby('record'):
+        login = user[1].drop(columns=['label', 'record']).values        
+        if not authentication(model, database, login):
             score = score + 1
         bar.next()
     bar.finish()

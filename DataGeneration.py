@@ -1,11 +1,15 @@
 import os
+import random
+import itertools
 import wfdb
 from wfdb import processing
 import numpy as np
 import pandas as pd
 from progress.bar import Bar
+import heapq
+from scipy.stats.stats import pearsonr
 
-def dataGeneration(data_path, window_size_half, max_bpm):
+def dataGeneration(data_path):
 
     patient_folders = [i for i in os.listdir(data_path) if (not i.startswith('.') and i.startswith('patient'))]
 
@@ -26,42 +30,69 @@ def dataGeneration(data_path, window_size_half, max_bpm):
             # load record
             signal, info = wfdb.rdsamp(detail_path + record_name, channel_names=['i'])
 
+            fs = 200
+
+            signal = processing.resample_sig(signal[:,0], info['fs'], fs)[0]
+
+            # set some parameters
+            window_size_half = int(fs * 0.125 / 2)
+            max_bpm = 230
+
             # detect QRS peaks
-            qrs_inds = processing.gqrs_detect(signal[:,0], fs=info['fs'])
-            search_radius = int(info['fs']*60/max_bpm)
-            corrected_qrs_inds = processing.correct_peaks(signal[:,0], peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)
+            qrs_inds = processing.gqrs_detect(signal, fs=fs)
+            search_radius = int(fs*60/max_bpm)
+            corrected_qrs_inds = processing.correct_peaks(signal, peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)
 
-            # a temp dataframe to store one record
-            record_temp = pd.DataFrame(columns=['label', 'record'])
-
-            # select 30 pieces, discard the first peak and the last peak
-            if len(corrected_qrs_inds)<32:
-                print('\noutlier detected, discard ' + record_name + ' of ' + patient_name)
-                continue
-
-            i_rand = np.random.choice(range(1, len(corrected_qrs_inds)-1), 30, replace=False)
-            for i in i_rand:
+            average_qrs = 0
+            count = 0
+            for i in range(1, len(corrected_qrs_inds)-1):
                 start_ind = corrected_qrs_inds[i] - window_size_half
-                end_ind = corrected_qrs_inds[i] + window_size_half
+                end_ind = corrected_qrs_inds[i] + window_size_half + 1
                 if start_ind<corrected_qrs_inds[i-1] or end_ind>corrected_qrs_inds[i+1]:
                     continue
-
-                # normalization
-                sig = processing.normalize_bound(signal[start_ind: end_ind], -1, 1)
-
-                record_temp = record_temp.append(pd.DataFrame(sig.T), ignore_index=True, sort=False)
-                record_temp.iloc[:, record_temp.columns.get_loc('label')] = patient_name
-                record_temp.iloc[:, record_temp.columns.get_loc('record')] = record_name
+                average_qrs = average_qrs + signal[start_ind: end_ind]
+                count = count + 1
 
             # remove outliers
-            if record_temp.shape[0]<3:
+            if count < 8:
                 print('\noutlier detected, discard ' + record_name + ' of ' + patient_name)
                 continue
 
+            average_qrs = average_qrs / count
 
-            # add it to final dataset
-            dataset = dataset.append(record_temp, ignore_index=True, sort=False)
-        
+            corrcoefs = []
+            for i in range(1, len(corrected_qrs_inds)-1):
+                start_ind = corrected_qrs_inds[i] - window_size_half
+                end_ind = corrected_qrs_inds[i] + window_size_half + 1
+                if start_ind<corrected_qrs_inds[i-1] or end_ind>corrected_qrs_inds[i+1]:
+                    corrcoefs.append(-100)
+                    continue
+                corrcoef = pearsonr(signal[start_ind: end_ind], average_qrs)[0]
+                corrcoefs.append(corrcoef)
+
+            max_corr = list(map(corrcoefs.index, heapq.nlargest(8, corrcoefs)))
+
+            index_corr = random.sample(list(itertools.permutations(max_corr, 8)), 100)
+
+            for index in index_corr:
+                # a temp dataframe to store one record
+                record_temp = pd.DataFrame()
+
+                signal_temp = []
+
+                for i in index:
+                    start_ind = corrected_qrs_inds[i + 1] - window_size_half
+                    end_ind = corrected_qrs_inds[i + 1] + window_size_half + 1
+                    sig = processing.normalize_bound(signal[start_ind: end_ind], -1, 1)
+                    signal_temp = np.concatenate((signal_temp, sig))
+
+                record_temp = record_temp.append(pd.DataFrame(signal_temp.reshape(-1,signal_temp.shape[0])), ignore_index=True, sort=False)
+                record_temp['label'] = patient_name
+                record_temp['record'] = record_name
+
+                # add it to final dataset
+                dataset = dataset.append(record_temp, ignore_index=True, sort=False)
+            
         bar.next()    
 
     bar.finish()
@@ -75,8 +106,4 @@ if __name__ == "__main__":
     # root path
     data_path = 'ptb-diagnostic-ecg-database-1.0.0/'
 
-    # set some parameters
-    window_size_half = 454
-    max_bpm = 230
-
-    dataGeneration(data_path, window_size_half, max_bpm)
+    dataGeneration(data_path)
