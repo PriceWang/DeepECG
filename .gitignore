@@ -2,6 +2,10 @@
 
 ptb-diagnostic-ecg-database-1.0.0/*
 
+binary_layer/__pycache__/*
+
 PTB_dataset.csv
 
 best_weights.hdf5
+
+test.py
