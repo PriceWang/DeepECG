@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import pandas as pd
 from progress.bar import Bar
@@ -26,7 +27,6 @@ def rebuildModel(model_path):
         layer_outputs.append(output)
 
     model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
-    model_template.summary()
 
     return model_template
 
@@ -41,8 +41,8 @@ def dataProcessing(dataset_path):
 
     user_database = test_user.groupby('record').head(1)
 
-    test_user = test_user.sample(n=100, replace=False)
-    test_intruder = (dataset.loc[~dataset['label'].isin(users)]).sample(n=100, replace=False)
+    test_user = test_user.sample(n=500, replace=False)
+    test_intruder = (dataset.loc[~dataset['label'].isin(users)]).sample(n=500, replace=False)
 
     return user_database, test_user, test_intruder
 
@@ -57,8 +57,10 @@ def databaseGeneration(model, user_database):
 def authentication(model, database, login):
     login_data = model.predict(login)[-1]
 
-    # threshold = 13.5
-    threshold = 200000
+    if BNN:
+        threshold = 200000
+    else:
+        threshold = 13.5
 
     for login_part in login_data:
         for database_part in database:
@@ -78,6 +80,7 @@ if __name__ == "__main__":
 
     database = databaseGeneration(model, user_database)
 
+    start_time = time.time()
     attempt_number = len(test_user['record'].unique())
     score = 0
 
@@ -89,9 +92,11 @@ if __name__ == "__main__":
             score = score + 1
         bar.next()
     bar.finish()
+    end_time = time.time()
 
-    print('Accuracy : {:.2%}'.format(score / attempt_number))
+    print('Accuracy : {:.2%}, Elapsed Time : {:.2f}s'.format(score / attempt_number, end_time - start_time))
 
+    start_time = time.time()
     attempt_number = len(test_intruder['record'].unique())
     score = 0
 
@@ -103,5 +108,6 @@ if __name__ == "__main__":
             score = score + 1
         bar.next()
     bar.finish()
+    end_time = time.time()
 
-    print('Accuracy : {:.2%}'.format(score / attempt_number))
+    print('Accuracy : {:.2%}, Elapsed Time : {:.2f}s'.format(score / attempt_number, end_time - start_time))
