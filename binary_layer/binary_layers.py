@@ -7,7 +7,7 @@ from keras.layers import InputSpec, Layer, Dense, Conv2D, Conv1D
 from keras import constraints
 from keras import initializers
 
-from binary_ops import binarize
+from binary_layer.binary_ops import binarize
 
 
 class Clip(constraints.Constraint):
@@ -54,18 +54,18 @@ class BinaryDense(Dense):
         self.kernel_constraint = Clip(-self.H, self.H)
         self.kernel_initializer = initializers.RandomUniform(-self.H, self.H)
         self.kernel = self.add_weight(shape=(input_dim, self.units),
-                                     initializer=self.kernel_initializer,
-                                     name='kernel',
-                                     regularizer=self.kernel_regularizer,
-                                     constraint=self.kernel_constraint)
+                                        initializer=self.kernel_initializer,
+                                        name='kernel',
+                                        regularizer=self.kernel_regularizer,
+                                        constraint=self.kernel_constraint)
 
         if self.use_bias:
             self.lr_multipliers = [self.kernel_lr_multiplier, self.bias_lr_multiplier]
             self.bias = self.add_weight(shape=(self.output_dim,),
-                                     initializer=self.bias_initializer,
-                                     name='bias',
-                                     regularizer=self.bias_regularizer,
-                                     constraint=self.bias_constraint)
+                                        initializer=self.bias_initializer,
+                                        name='bias',
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint)
         else:
             self.lr_multipliers = [self.kernel_lr_multiplier]
             self.bias = None
@@ -85,8 +85,8 @@ class BinaryDense(Dense):
         
     def get_config(self):
         config = {'H': self.H,
-                  'kernel_lr_multiplier': self.kernel_lr_multiplier,
-                  'bias_lr_multiplier': self.bias_lr_multiplier}
+                    'kernel_lr_multiplier': self.kernel_lr_multiplier,
+                    'bias_lr_multiplier': self.bias_lr_multiplier}
         base_config = super(BinaryDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
@@ -111,7 +111,7 @@ class BinaryConv2D(Conv2D):
             channel_axis = -1 
         if input_shape[channel_axis] is None:
                 raise ValueError('The channel dimension of the inputs '
-                                 'should be defined. Found `None`.')
+                                    'should be defined. Found `None`.')
 
         input_dim = input_shape[channel_axis]
         kernel_shape = self.kernel_size + (input_dim, self.filters)
@@ -132,18 +132,18 @@ class BinaryConv2D(Conv2D):
         self.kernel_constraint = Clip(-self.H, self.H)
         self.kernel_initializer = initializers.RandomUniform(-self.H, self.H)
         self.kernel = self.add_weight(shape=kernel_shape,
-                                 initializer=self.kernel_initializer,
-                                 name='kernel',
-                                 regularizer=self.kernel_regularizer,
-                                 constraint=self.kernel_constraint)
+                                    initializer=self.kernel_initializer,
+                                    name='kernel',
+                                    regularizer=self.kernel_regularizer,
+                                    constraint=self.kernel_constraint)
 
         if self.use_bias:
             self.lr_multipliers = [self.kernel_lr_multiplier, self.bias_lr_multiplier]
             self.bias = self.add_weight((self.output_dim,),
-                                     initializer=self.bias_initializers,
-                                     name='bias',
-                                     regularizer=self.bias_regularizer,
-                                     constraint=self.bias_constraint)
+                                        initializer=self.bias_initializers,
+                                        name='bias',
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint)
 
         else:
             self.lr_multipliers = [self.kernel_lr_multiplier]
@@ -175,8 +175,8 @@ class BinaryConv2D(Conv2D):
         
     def get_config(self):
         config = {'H': self.H,
-                  'kernel_lr_multiplier': self.kernel_lr_multiplier,
-                  'bias_lr_multiplier': self.bias_lr_multiplier}
+                    'kernel_lr_multiplier': self.kernel_lr_multiplier,
+                    'bias_lr_multiplier': self.bias_lr_multiplier}
         base_config = super(BinaryConv2D, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
     
@@ -204,7 +204,7 @@ class BinaryConv1D(Conv1D):
             channel_axis = -1 
         if input_shape[channel_axis] is None:
                 raise ValueError('The channel dimension of the inputs '
-                                 'should be defined. Found `None`.')
+                                    'should be defined. Found `None`.')
 
         input_dim = input_shape[channel_axis]
         kernel_shape = self.kernel_size + (input_dim, self.filters)
@@ -225,25 +225,25 @@ class BinaryConv1D(Conv1D):
         self.kernel_constraint = Clip(-self.H, self.H)
         self.kernel_initializer = initializers.RandomUniform(-self.H, self.H)
         self.kernel = self.add_weight(shape=kernel_shape,
-                                 initializer=self.kernel_initializer,
-                                 name='kernel',
-                                 regularizer=self.kernel_regularizer,
-                                 constraint=self.kernel_constraint)
+                                    initializer=self.kernel_initializer,
+                                    name='kernel',
+                                    regularizer=self.kernel_regularizer,
+                                    constraint=self.kernel_constraint)
 
         if self.use_bias:
             self.lr_multipliers = [self.kernel_lr_multiplier, self.bias_lr_multiplier]
             self.bias = self.add_weight((self.output_dim,),
-                                     initializer=self.bias_initializers,
-                                     name='bias',
-                                     regularizer=self.bias_regularizer,
-                                     constraint=self.bias_constraint)
+                                        initializer=self.bias_initializers,
+                                        name='bias',
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint)
 
         else:
             self.lr_multipliers = [self.kernel_lr_multiplier]
             self.bias = None
 
         # Set input spec.
-        self.input_spec = InputSpec(ndim=4, axes={channel_axis: input_dim})
+        self.input_spec = InputSpec(ndim=3, axes={channel_axis: input_dim})
         self.built = True
 
     def call(self, inputs):
@@ -268,8 +268,8 @@ class BinaryConv1D(Conv1D):
         
     def get_config(self):
         config = {'H': self.H,
-                  'kernel_lr_multiplier': self.kernel_lr_multiplier,
-                  'bias_lr_multiplier': self.bias_lr_multiplier}
+                    'kernel_lr_multiplier': self.kernel_lr_multiplier,
+                    'bias_lr_multiplier': self.bias_lr_multiplier}
         base_config = super(BinaryConv1D, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
