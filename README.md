@@ -14,7 +14,7 @@ The whole project contains 3 different methods to rebuild model and execute ECG 
 
     This rebuilds model from a pre-trained CNN model and use **binarized weights**. The weights are in this format:
 
-    <div align=center> <img src="http://latex.codecogs.com/gif.latex?\\pm{1}"> </div>
+    <div align=center> <img src="http://latex.codecogs.com/gif.latex?\ \pm{1}"> </div>
 
     The best performance is **88.85%**
 
@@ -22,7 +22,7 @@ The whole project contains 3 different methods to rebuild model and execute ECG 
 
     This rebuilds model from a pre-trained CNN model and use **exponent weights**. The weights are in this format:
 
-    <div align=center> <img src="http://latex.codecogs.com/gif.latex?\\frac{INTEGER}{2^n}"> </div>
+    <div align=center> <img src="http://latex.codecogs.com/gif.latex?\ \frac{INTEGER}{2^n}"> </div>
 
     **The performance increases with larger 'n' value**
 
