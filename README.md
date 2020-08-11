@@ -1,8 +1,34 @@
-# BinaryDeepECG
+# Deep ECG
 
 ## Introduction
 
-Binary CNN for ECG Authentication
+Build a deep neural network for ECG authentication
+
+The whole project contains 3 different methods to rebuild model and execute ECG authentication:
+
+- Original CNN
+
+    This rebuilds model from a pre-trained CNN model and use its **original weights**. The best performance is **99.63%**
+
+- Binary Neural Network
+
+    This rebuilds model from a pre-trained CNN model and use **binarized weights**. The weights are in this format:
+
+    <div align=center> <img src="http://latex.codecogs.com/gif.latex?\ \pm{1}"> </div>
+
+    The best performance is **88.85%**
+
+- Exponentiation Neural Network
+
+    This rebuilds model from a pre-trained CNN model and use **exponent weights**. The weights are in this format:
+
+    <div align=center> <img src="http://latex.codecogs.com/gif.latex?\ \frac{INTEGER}{2^n}"> </div>
+
+    **The performance increases with larger 'n' value**
+
+Performance of all structures as shown:
+
+<div align=center> <img src=performance.png width = 60% height = 60%> </div>
 
 ## Requirements and Installation
 
@@ -33,41 +59,41 @@ Binary CNN for ECG Authentication
 
 ## Usage
 
-### Step 1: Data Processing
+- Step 1: Data Processing
 
-To precess data from original dataset manually, run:
+    To precess data from original dataset manually, run:
 
-```cmd
-python DataGeneration.py
-```
+    ```cmd
+    python DataGeneration.py
+    ```
 
-Or you can download the pre-processed dataset from the link:
+    Or you can download the pre-processed dataset from the link:
 
-[PTB Processed Dataset](https://drive.google.com/file/d/1W1LkLuK3uwxJskv_1KAMDvivPbCyGgU4/view?usp=sharing)
+    [PTB Processed Dataset](https://drive.google.com/file/d/1W1LkLuK3uwxJskv_1KAMDvivPbCyGgU4/view?usp=sharing)
 
-Put it on the root directory:
+    Put it on the root directory:
 
-```txt
-- BinaryDeepECG
-    - ...
-    - PTB_dataset.csv
-    - ...
-```
+    ```txt
+    - BinaryDeepECG
+        - ...
+        - PTB_dataset.csv
+        - ...
+    ```
 
-### Step 2: CNN Modelling
+- Step 2: CNN Modelling
 
-To build CNN model for human recognition, run:
+    To build CNN model for human recognition, run:
 
-```cmd
-python ModelCreation.py
-```
+    ```cmd
+    python ModelCreation.py
+    ```
 
-This model has been trained and uploaded as 'model.h5'
+    This model has been trained and uploaded as 'model.h5'
 
-### Step 3: Authentication
+- Step 3: Authentication
 
-To execute authentication section, run:
+    To execute authentication section, run:
 
-```cmd
-python Authentication.py
-```
+    ```cmd
+    python Authentication.py
+    ```
