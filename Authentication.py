@@ -1,12 +1,22 @@
-import time
 import numpy as np
 import pandas as pd
 from progress.bar import Bar
-from binary_layer.binary_ops import binarize
+import matplotlib.pyplot as plt
+from matplotlib import ticker
 
 import keras
+import keras.backend as K
 
-BNN = True
+
+def weightTransform(W, mode = 1, n = 1):
+
+    if mode == 1:
+        W_new = W
+    elif mode == 2:
+        W_new = np.sign(W)
+    else:
+        W_new = np.round(W * (np.power(2, n))) / (np.power(2, n))
+    return W_new
 
 def rebuildModel(model_path):
 
@@ -17,10 +27,54 @@ def rebuildModel(model_path):
         if layer.name.startswith('dropout'):
             break
 
-        if BNN and layer.name.startswith('conv1d'):
+        if layer.name.startswith('conv1d'):
             weights = layer.get_weights()
             for i in range(len(weights)):
-                weights[i] = binarize(weights[i])
+                weights[i] = weightTransform(weights[i])
+            layer.set_weights(weights)
+
+        output = layer.output
+        layer_outputs.append(output)
+
+    model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
+
+    return model_template
+
+def rebuildModelBNN(model_path):
+
+    model = keras.models.load_model(model_path)
+
+    layer_outputs = []
+    for layer in model.layers:
+        if layer.name.startswith('dropout'):
+            break
+
+        if layer.name.startswith('conv1d'):
+            weights = layer.get_weights()
+            for i in range(len(weights)):
+                weights[i] = weightTransform(weights[i], 2)
+            layer.set_weights(weights)
+
+        output = layer.output
+        layer_outputs.append(output)
+
+    model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
+
+    return model_template
+
+def rebuildModelENN(model_path, n):
+
+    model = keras.models.load_model(model_path)
+
+    layer_outputs = []
+    for layer in model.layers:
+        if layer.name.startswith('dropout'):
+            break
+
+        if layer.name.startswith('conv1d'):
+            weights = layer.get_weights()
+            for i in range(len(weights)):
+                weights[i] = weightTransform(weights[i], 3, n)
             layer.set_weights(weights)
 
         output = layer.output
@@ -41,8 +95,8 @@ def dataProcessing(dataset_path):
 
     user_database = test_user.groupby('record').head(1)
 
-    test_user = test_user.sample(n=500, replace=False)
-    test_intruder = (dataset.loc[~dataset['label'].isin(users)]).sample(n=500, replace=False)
+    test_user = test_user.sample(n=1000, replace=False)
+    test_intruder = (dataset.loc[~dataset['label'].isin(users)]).sample(n=1000, replace=False)
 
     return user_database, test_user, test_intruder
 
@@ -54,13 +108,8 @@ def databaseGeneration(model, user_database):
 
     return template
 
-def authentication(model, database, login):
+def authentication(model, database, login, threshold):
     login_data = model.predict(login)[-1]
-
-    if BNN:
-        threshold = 200000
-    else:
-        threshold = 13.5
 
     for login_part in login_data:
         for database_part in database:
@@ -69,45 +118,94 @@ def authentication(model, database, login):
 
     return False
 
+def login(model, database, test_user, test_intruder, threshold):
+    user_number = len(test_user['record'].unique())
+    intruder_number = len(test_intruder['record'].unique())
+
+    test_number = user_number + intruder_number
+    score = 0
+
+    Bar.check_tty = False
+    bar = Bar('Verifying Users', max=user_number, fill='#', suffix='%(percent)d%%')
+    for user in test_user.groupby('record'):
+        login = user[1].drop(columns=['label', 'record']).values        
+        if authentication(model, database, login, threshold):
+            score = score + 1
+        bar.next()
+    bar.finish()
+
+    Bar.check_tty = False
+    bar = Bar('Verifying Intruders', max=intruder_number, fill='#', suffix='%(percent)d%%')
+    for user in test_intruder.groupby('record'):
+        login = user[1].drop(columns=['label', 'record']).values        
+        if not authentication(model, database, login, threshold):
+            score = score + 1
+        bar.next()
+    bar.finish()
+
+    accuracy = score / test_number
+
+    print('Accuracy : {:.2%}'.format(accuracy))
+
+    return accuracy
+
 
 if __name__ == "__main__":
 
     model_path = 'model.h5'
     dataset_path = 'PTB_dataset.csv'
 
-    model = rebuildModel(model_path)
     user_database, test_user, test_intruder = dataProcessing(dataset_path)
+
+    accuracy = []
+
+    model = rebuildModel(model_path)
 
     database = databaseGeneration(model, user_database)
 
-    start_time = time.time()
-    attempt_number = len(test_user['record'].unique())
-    score = 0
+    normal_acc = login(model, database, test_user, test_intruder, 10.5)
 
-    Bar.check_tty = False
-    bar = Bar('Verifying', max=attempt_number, fill='#', suffix='%(percent)d%%')
-    for user in test_user.groupby('record'):
-        login = user[1].drop(columns=['label', 'record']).values        
-        if authentication(model, database, login):
-            score = score + 1
-        bar.next()
-    bar.finish()
-    end_time = time.time()
+    accuracy.append(normal_acc)
 
-    print('Accuracy : {:.2%}, Elapsed Time : {:.2f}s'.format(score / attempt_number, end_time - start_time))
+    model = rebuildModelBNN(model_path)
 
-    start_time = time.time()
-    attempt_number = len(test_intruder['record'].unique())
-    score = 0
+    database = databaseGeneration(model, user_database)
 
-    Bar.check_tty = False
-    bar = Bar('Verifying', max=attempt_number, fill='#', suffix='%(percent)d%%')
-    for user in test_intruder.groupby('record'):
-        login = user[1].drop(columns=['label', 'record']).values        
-        if not authentication(model, database, login):
-            score = score + 1
-        bar.next()
-    bar.finish()
-    end_time = time.time()
+    bnn_acc = login(model, database, test_user, test_intruder, 135000)
 
-    print('Accuracy : {:.2%}, Elapsed Time : {:.2f}s'.format(score / attempt_number, end_time - start_time))
+    accuracy.append(bnn_acc)
+
+    model = rebuildModelENN(model_path, 2)
+
+    database = databaseGeneration(model, user_database)
+
+    enn_acc_1 = login(model, database, test_user, test_intruder, 3.75)
+
+    accuracy.append(enn_acc_1)
+
+    model = rebuildModelENN(model_path, 3)
+
+    database = databaseGeneration(model, user_database)
+
+    enn_acc_2 = login(model, database, test_user, test_intruder, 6)
+
+    accuracy.append(enn_acc_2)
+
+    model = rebuildModelENN(model_path, 4)
+
+    database = databaseGeneration(model, user_database)
+
+    enn_acc_3 = login(model, database, test_user, test_intruder, 9)
+
+    accuracy.append(enn_acc_3)
+
+    net = ['original', 'bnn', 'enn(n=1)', 'enn(n=2)', 'enn(n=3)']
+    fig, ax = plt.subplots()
+    plt.plot(net, accuracy, color='b')
+    plt.scatter(net, accuracy, color='r', marker='v')
+    plt.ylabel('Accuracy')
+    ax.yaxis.set_major_formatter(ticker.PercentFormatter(xmax=1, decimals=0))
+    for a, b in zip(net, accuracy):
+        plt.text(a, b+0.001, '{:.2%}'.format(b), ha='center', va= 'bottom',fontsize=9)
+    plt.show()
+
