@@ -15,13 +15,13 @@ def weightTransform(W, mode = 1, n = 1):
     elif mode == 2:
         W_new = np.sign(W)
     else:
-        W_new = np.round(W * (np.power(2, n))) / (np.power(2, n))
+        W_new = np.round(W * (np.power(2, n)))
     return W_new
 
 def rebuildModel(model_path):
 
     model = keras.models.load_model(model_path)
-
+    count = 0
     layer_outputs = []
     for layer in model.layers:
         if layer.name.startswith('dropout'):
@@ -30,12 +30,14 @@ def rebuildModel(model_path):
         if layer.name.startswith('conv1d'):
             weights = layer.get_weights()
             for i in range(len(weights)):
+                w = weightTransform(weights[i])
+                count = count + np.size(w)
                 weights[i] = weightTransform(weights[i])
             layer.set_weights(weights)
 
         output = layer.output
         layer_outputs.append(output)
-
+    print(count)
     model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
 
     return model_template
@@ -43,7 +45,7 @@ def rebuildModel(model_path):
 def rebuildModelBNN(model_path):
 
     model = keras.models.load_model(model_path)
-
+    count_inv = 0
     layer_outputs = []
     for layer in model.layers:
         if layer.name.startswith('dropout'):
@@ -52,12 +54,14 @@ def rebuildModelBNN(model_path):
         if layer.name.startswith('conv1d'):
             weights = layer.get_weights()
             for i in range(len(weights)):
+                w = weightTransform(weights[i], 2)
+                count_inv = count_inv + np.sum(w < 0)
                 weights[i] = weightTransform(weights[i], 2)
             layer.set_weights(weights)
 
         output = layer.output
         layer_outputs.append(output)
-
+    print(count_inv)
     model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
 
     return model_template
@@ -65,7 +69,8 @@ def rebuildModelBNN(model_path):
 def rebuildModelENN(model_path, n):
 
     model = keras.models.load_model(model_path)
-
+    count = 0
+    count_inv = 0
     layer_outputs = []
     for layer in model.layers:
         if layer.name.startswith('dropout'):
@@ -74,12 +79,15 @@ def rebuildModelENN(model_path, n):
         if layer.name.startswith('conv1d'):
             weights = layer.get_weights()
             for i in range(len(weights)):
-                weights[i] = weightTransform(weights[i], 3, n)
+                w = weightTransform(weights[i], 3, n)
+                count = count + np.sum(np.abs(w))
+                count_inv = count_inv + np.sum(w < 0)
+                weights[i] = weightTransform(weights[i], 3, n) / (np.power(2, n))
             layer.set_weights(weights)
 
         output = layer.output
         layer_outputs.append(output)
-
+    print(count, count_inv)
     model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
 
     return model_template
@@ -199,7 +207,7 @@ if __name__ == "__main__":
 
     accuracy.append(enn_acc_3)
 
-    net = ['original', 'bnn', 'enn(n=1)', 'enn(n=2)', 'enn(n=3)']
+    net = ['original', 'binary', 'exponent_n1', 'exponent_n2', 'exponent_n3']
     fig, ax = plt.subplots()
     plt.plot(net, accuracy, color='b')
     plt.scatter(net, accuracy, color='r', marker='v')
