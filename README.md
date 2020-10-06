@@ -39,7 +39,7 @@ Performance of all structures as shown:
     Download and unzip it to the root directory. The structure should be like this:
 
     ```txt
-    - BinaryDeepECG
+    - DeepECG
         - ...
         - ptb-diagnostic-ecg-database-1.0.0
             - patient001
@@ -74,7 +74,7 @@ Performance of all structures as shown:
     Put it on the root directory:
 
     ```txt
-    - BinaryDeepECG
+    - DeepECG
         - ...
         - PTB_dataset.csv
         - ...
