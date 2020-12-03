@@ -4,10 +4,9 @@ import pandas as pd
 
 import keras
 import keras.backend as K
-from keras.datasets import mnist
+from keras import Model
 from keras.models import Sequential
-from keras.layers import Conv1D, Dense, Dropout, Activation, BatchNormalization, MaxPooling1D, Flatten, Conv2D
-from keras.layers import Flatten
+from keras.layers import Input, Softmax, Conv1D, Dense, Dropout, ReLU, MaxPooling1D, Flatten
 from keras.optimizers import SGD, Adam, RMSprop
 from keras.callbacks import LearningRateScheduler
 from keras.utils import np_utils
@@ -47,9 +46,12 @@ def modelling(X_train, Y_train_wide):
     # 1-D CNN
     input_shape = (X_train.shape[1], X_train.shape[2])
 
+    '''
     model = Sequential()
 
-    model.add(Conv1D(16, 7, input_shape=input_shape))
+    model.add(Input(shape=input_shape))
+
+    model.add(Conv1D(16, 7))
     model.add(Activation('relu'))
     model.add(MaxPooling1D(pool_size=3, strides=2))
 
@@ -79,6 +81,42 @@ def modelling(X_train, Y_train_wide):
                 optimizer='adam',
                 metrics=['accuracy'])
 
+    model.summary()
+    '''
+
+    inputs = Input(shape=input_shape)
+    x = Conv1D(16, 7)(inputs)
+    x = ReLU()(x)
+    x = MaxPooling1D(pool_size=3, strides=2)(x)
+
+    x = Conv1D(32 ,5)(x)
+    x = ReLU()(x)
+    x = MaxPooling1D(pool_size=3, strides=2)(x)
+
+    x = Conv1D(64, 5)(x)
+    x = ReLU()(x)
+    x = MaxPooling1D(pool_size=3, strides=2)(x)
+
+    x = Conv1D(128, 7)(x)
+    x = ReLU()(x)
+
+    x = Conv1D(256, 7)(x)
+    x = ReLU()(x)
+
+    x = Conv1D(256, 8)(x)
+    x = ReLU()(x)
+    x = Dropout(0.5)(x)
+
+    x = Flatten()(x)
+    x = Dense(num_classes)(x)
+
+    predictions = Softmax()(x)
+
+    model = Model(inputs=inputs, outputs=predictions)
+
+    model.compile(loss='binary_crossentropy',
+                  optimizer='adam',
+                  metrics=['accuracy'])
     model.summary()
 
     # training
