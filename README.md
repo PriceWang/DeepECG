@@ -12,7 +12,7 @@ The whole project contains 3 different methods to rebuild model and execute ECG 
 
 - Binary Neural Network
 
-    This rebuilds model from a pre-trained CNN model and use **binarized weights**. The weights are in this format:
+    This rebuilds model from a pre-trained CNN model and use **binary weights**. The weights are in this format:
 
     <div align=center> <img src="https://latex.codecogs.com/gif.latex?%5Cpm%7B1%7D"> </div>
 
@@ -97,3 +97,9 @@ Performance of all structures as shown:
     ```cmd
     python Authentication.py
     ```
+
+## Update
+
+- 2021/01/20
+
+    optimize structure, improve performance, test generalization ability

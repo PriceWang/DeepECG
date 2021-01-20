@@ -37,7 +37,7 @@ def rebuildModel(model_path):
 
         output = layer.output
         layer_outputs.append(output)
-    print(count)
+    print("Original Weight\nMultiplication Number: ", count)
     model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
 
     return model_template
@@ -61,7 +61,7 @@ def rebuildModelBNN(model_path):
 
         output = layer.output
         layer_outputs.append(output)
-    print(count_inv)
+    print("Binary Weight\nInversion Number: ", count_inv)
     model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
 
     return model_template
@@ -87,7 +87,7 @@ def rebuildModelENN(model_path, n):
 
         output = layer.output
         layer_outputs.append(output)
-    print(count, count_inv)
+    print("Exponent Weight\nAddition Number: ", count, "Inversion Number: ", count_inv)
     model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
 
     return model_template
@@ -131,29 +131,32 @@ def login(model, database, test_user, test_intruder, threshold):
     intruder_number = len(test_intruder['record'].unique())
 
     test_number = user_number + intruder_number
-    score = 0
 
+    user_score = 0
     Bar.check_tty = False
     bar = Bar('Verifying Users', max=user_number, fill='#', suffix='%(percent)d%%')
     for user in test_user.groupby('record'):
         login = user[1].drop(columns=['label', 'record']).values        
         if authentication(model, database, login, threshold):
-            score = score + 1
+            user_score = user_score + 1
         bar.next()
     bar.finish()
+    print("User Accuracy: {:.2%}".format(user_score / user_number))
 
+    intruder_score = 0
     Bar.check_tty = False
     bar = Bar('Verifying Intruders', max=intruder_number, fill='#', suffix='%(percent)d%%')
     for user in test_intruder.groupby('record'):
         login = user[1].drop(columns=['label', 'record']).values        
         if not authentication(model, database, login, threshold):
-            score = score + 1
+            intruder_score = intruder_score + 1
         bar.next()
     bar.finish()
+    print("Intruder Accuracy: {:.2%}".format(intruder_score / intruder_number))
 
-    accuracy = score / test_number
+    accuracy = (user_score + intruder_score) / test_number
 
-    print('Accuracy : {:.2%}'.format(accuracy))
+    print('Average Accuracy : {:.2%}'.format(accuracy))
 
     return accuracy
 
@@ -161,7 +164,8 @@ def login(model, database, test_user, test_intruder, threshold):
 if __name__ == "__main__":
 
     model_path = 'model.h5'
-    dataset_path = 'PTB_dataset.csv'
+    dataset_name = 'ptb-diagnostic-ecg-database-1.0.0'
+    dataset_path = 'dataset_processed/' + dataset_name + '.csv'
 
     user_database, test_user, test_intruder = dataProcessing(dataset_path)
 

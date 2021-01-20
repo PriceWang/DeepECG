@@ -164,7 +164,9 @@ def evaluation(model, X_test, Y_test_num):
     print(metrics.classification_report(Y_test_num, pred))
 
 if __name__ == "__main__":
-    dataset = pd.read_csv('PTB_dataset.csv')
+    dataset_name = 'ptb-diagnostic-ecg-database-1.0.0'
+    path = 'dataset_processed/' + dataset_name + '.csv'
+    dataset = pd.read_csv(path)
     num_classes, X_train, X_test, Y_train, Y_test = createSet(dataset)
     Y_train_wide, Y_test_num, Y_test_wide = binaryConvertion(num_classes, Y_train, Y_test)
     model = modelling(X_train, Y_train_wide)
