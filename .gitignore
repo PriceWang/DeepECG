@@ -11,3 +11,7 @@ PTB_dataset.csv
 best_weights.hdf5
 
 test.py
+
+testModel.h5
+
+model*

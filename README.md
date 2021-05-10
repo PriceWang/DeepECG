@@ -4,6 +4,8 @@
 
 Build a deep neural network for ECG authentication
 
+[Low Complexity ECG Biometric Authentication for IoT Edge Devices](https://ieeexplore.ieee.org/document/9332012)
+
 The whole project contains 3 different methods to rebuild model and execute ECG authentication:
 
 - Original CNN
@@ -103,3 +105,15 @@ Performance of all structures as shown:
 - 2021/01/20
 
     optimize structure, improve performance, test generalization ability
+
+- 2021/02/05
+
+    optimize path search
+
+- 2021/03/16 *
+
+    update path structure
+
+- 2021/05/10
+
+    pruning
