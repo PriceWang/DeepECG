@@ -86,7 +86,7 @@ def dataGeneration(data_path, csv_path, record_path):
                     signal_temp = np.concatenate((signal_temp, sig))
 
                 record_temp = record_temp.append(pd.DataFrame(signal_temp.reshape(-1,signal_temp.shape[0])), ignore_index=True, sort=False)
-                record_temp['label'] = 'Unknown'
+                record_temp['label'] = record_name
                 record_temp['record'] = record_name
 
                 # add it to final dataset
