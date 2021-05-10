@@ -71,7 +71,9 @@ def rebuildModelENN(model_path, n):
     model = keras.models.load_model(model_path)
     count = 0
     count_inv = 0
+    count_shift = 0
     layer_outputs = []
+
     for layer in model.layers:
         if layer.name.startswith('dropout'):
             break
@@ -80,14 +82,19 @@ def rebuildModelENN(model_path, n):
             weights = layer.get_weights()
             for i in range(len(weights)):
                 w = weightTransform(weights[i], 3, n)
-                count = count + np.sum(np.abs(w))
-                count_inv = count_inv + np.sum(w < 0)
+                if i==0:
+                    count = count + np.size(w)
+                    count_shift = count_shift + np.size(w)
+                    count_inv = count_inv + np.sum(w < 0)
+                if i==1:
+                    count = count + np.size(w)
+
                 weights[i] = weightTransform(weights[i], 3, n) / (np.power(2, n))
             layer.set_weights(weights)
 
         output = layer.output
         layer_outputs.append(output)
-    print("Exponent Weight\nAddition Number: ", count, "Inversion Number: ", count_inv)
+    print("Exponent Weight\nAddition Number: ", count, "Inversion Number: ", count_inv, "Bit-shift Number: ", count_shift)
     model_template = keras.Model(inputs=model.input, outputs=layer_outputs)
 
     return model_template
@@ -121,7 +128,8 @@ def authentication(model, database, login, threshold):
 
     for login_part in login_data:
         for database_part in database:
-            if np.linalg.norm(login_part - database_part) < threshold:
+            # if np.linalg.norm(login_part - database_part) < threshold:
+            if np.corrcoef(login_part, database_part, rowvar = 0)[0][1] > threshold:
                 return True
 
     return False
@@ -163,7 +171,8 @@ def login(model, database, test_user, test_intruder, threshold):
 
 if __name__ == "__main__":
 
-    model_path = 'model.h5'
+    # model_path = 'testModel.h5'
+    model_path = 'model_spar0.8.h5'
     dataset_name = 'ptb-diagnostic-ecg-database-1.0.0'
     dataset_path = 'dataset_processed/' + dataset_name + '.csv'
 
@@ -171,27 +180,27 @@ if __name__ == "__main__":
 
     accuracy = []
 
-    model = rebuildModel(model_path)
+    # model = rebuildModel(model_path)
+
+    # database = databaseGeneration(model, user_database)
+
+    # normal_acc = login(model, database, test_user, test_intruder, 10.5)
+
+    # accuracy.append(normal_acc)
+
+    # model = rebuildModelBNN(model_path)
+
+    # database = databaseGeneration(model, user_database)
+
+    # bnn_acc = login(model, database, test_user, test_intruder, 135000)
+
+    # accuracy.append(bnn_acc)
+
+    model = rebuildModelENN(model_path, 8)
 
     database = databaseGeneration(model, user_database)
 
-    normal_acc = login(model, database, test_user, test_intruder, 10.5)
-
-    accuracy.append(normal_acc)
-
-    model = rebuildModelBNN(model_path)
-
-    database = databaseGeneration(model, user_database)
-
-    bnn_acc = login(model, database, test_user, test_intruder, 135000)
-
-    accuracy.append(bnn_acc)
-
-    model = rebuildModelENN(model_path, 2)
-
-    database = databaseGeneration(model, user_database)
-
-    enn_acc_1 = login(model, database, test_user, test_intruder, 3.75)
+    enn_acc_1 = login(model, database, test_user, test_intruder, 0.94)
 
     accuracy.append(enn_acc_1)
 
