@@ -1,9 +1,0 @@
-tensorflow
-tqdm
-wfdb
-progress
-matplotlib
-numpy
-pandas
-keras
-scikit-learn

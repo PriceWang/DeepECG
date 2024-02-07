@@ -1,0 +1,11 @@
+name: deepecg
+channels:
+  - defaults
+dependencies:
+  - pip=23.3.1
+  - python=3.11.0
+  - pip:
+    - tensorflow==2.15.0.post1
+    - tqdm==4.66.1
+    - wfdb==4.1.2
+    - scikit-learn==1.4.0

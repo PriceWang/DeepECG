@@ -1,3 +1,13 @@
+<!--
+ * @Author: Guoxin Wang
+ * @Date: 2024-02-07 07:47:56
+ * @LastEditors: Guoxin Wang
+ * @LastEditTime: 2024-02-07 11:58:25
+ * @FilePath: /DeepECG/README.md
+ * @Description: 
+ * 
+ * Copyright (c) 2024 by Guoxin Wang, All Rights Reserved. 
+-->
 # Deep ECG
 
 ## Introduction
@@ -28,35 +38,24 @@ The whole project contains 3 different methods to rebuild model and execute ECG 
 
     **The performance increases with larger 'n' value**
 
-Performance of all structures as shown:
-
-<div align=center> <img src=performance.png width = 60% height = 60%> </div>
-
 ## Requirements and Installation
 
 - Database
 
     [PTB Diagnostic ECG Database](https://physionet.org/content/ptbdb/1.0.0/)
 
-    Download and unzip it to the root directory. The structure should be like this:
-
-    ```txt
-    - DeepECG
-        - ...
-        - ptb-diagnostic-ecg-database-1.0.0
-            - patient001
-            - ...
-            - patient294
-            - ...
-        - ...
-    ```
-
 - Libraries
 
     Install the necessary libraries:
 
     ```cmd
-    pip install -r requirements.txt
+    conda env create -n deepecg --file environment.yml
+    ```
+
+    Activate environment:
+
+    ```cmd
+    conda activate deepecg
     ```
 
 ## Usage
@@ -66,38 +65,34 @@ Performance of all structures as shown:
     To precess data from original dataset manually, run:
 
     ```cmd
-    python DataGeneration.py
+    python DataGeneration.py \
+        --data_path ${data_path} \
+        --prefix ${prefix} \
+        --output_path ${output_path}
     ```
 
     Or you can download the pre-processed dataset from the link:
 
     [PTB Processed Dataset](https://drive.google.com/file/d/1W1LkLuK3uwxJskv_1KAMDvivPbCyGgU4/view?usp=sharing)
 
-    Put it on the root directory:
-
-    ```txt
-    - DeepECG
-        - ...
-        - PTB_dataset.csv
-        - ...
-    ```
-
 - Step 2: CNN Modelling
 
     To build CNN model for human recognition, run:
 
     ```cmd
-    python ModelCreation.py
+    python ModelCreation.py \
+        --save_path ${save_path} \
+        --data_path ${data_path}
     ```
-
-    This model has been trained and uploaded as 'model.h5'
 
 - Step 3: Authentication
 
     To execute authentication section, run:
 
     ```cmd
-    python Authentication.py
+    python Authentication.py \
+        --model_path ${model_path} \
+        --data_path ${data_path}
     ```
 
 ## Update
