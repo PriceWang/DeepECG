@@ -2,7 +2,7 @@
  * @Author: Guoxin Wang
  * @Date: 2024-02-07 07:47:56
  * @LastEditors: Guoxin Wang
- * @LastEditTime: 2024-02-07 11:58:25
+ * @LastEditTime: 2024-02-07 12:11:35
  * @FilePath: /DeepECG/README.md
  * @Description: 
  * 

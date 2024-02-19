@@ -44,7 +44,7 @@ def rebuildModel(model_path):
             for i in range(len(weights)):
                 w = weightTransform(weights[i])
                 count = count + np.size(w)
-                weights[i] = weightTransform(weights[i])
+                weights[i] = w
             layer.set_weights(weights)
         output = layer.output
         layer_outputs.append(output)
@@ -65,7 +65,7 @@ def rebuildModelBNN(model_path):
             for i in range(len(weights)):
                 w = weightTransform(weights[i], 2)
                 count_inv = count_inv + np.sum(w < 0)
-                weights[i] = weightTransform(weights[i], 2)
+                weights[i] = w
             layer.set_weights(weights)
         output = layer.output
         layer_outputs.append(output)
@@ -93,7 +93,7 @@ def rebuildModelENN(model_path, n):
                     count_inv = count_inv + np.sum(w < 0)
                 if i == 1:
                     count = count + np.size(w)
-                weights[i] = weightTransform(weights[i], 3, n) / (np.power(2, n))
+                weights[i] = w / (np.power(2, n))
             layer.set_weights(weights)
         output = layer.output
         layer_outputs.append(output)
@@ -169,20 +169,20 @@ if __name__ == "__main__":
     accuracy = []
     model = rebuildModel(model_path)
     database = databaseGeneration(model, user_database)
-    accuracy.append(login(model, database, test_user, test_intruder, 10.5))
+    accuracy.append(login(model, database, test_user, test_intruder, 0.9))
     model = rebuildModelBNN(model_path)
     database = databaseGeneration(model, user_database)
-    accuracy.append(login(model, database, test_user, test_intruder, 135000))
-    model = rebuildModelENN(model_path, 8)
+    accuracy.append(login(model, database, test_user, test_intruder, 0.984))
+    model = rebuildModelENN(model_path, 1)
     database = databaseGeneration(model, user_database)
-    accuracy.append(login(model, database, test_user, test_intruder, 0.94))
+    accuracy.append(login(model, database, test_user, test_intruder, 0.963))
+    model = rebuildModelENN(model_path, 2)
+    database = databaseGeneration(model, user_database)
+    accuracy.append(login(model, database, test_user, test_intruder, 0.935))
     model = rebuildModelENN(model_path, 3)
     database = databaseGeneration(model, user_database)
-    accuracy.append(login(model, database, test_user, test_intruder, 6))
-    model = rebuildModelENN(model_path, 4)
-    database = databaseGeneration(model, user_database)
-    accuracy.append(login(model, database, test_user, test_intruder, 9))
-    net = ["original", "binary", "exponent_n1", "exponent_n2", "exponent_n3"]
+    accuracy.append(login(model, database, test_user, test_intruder, 0.935))
+    net = ["original", "binary", "cut_off", "exponent_n1", "exponent_n2", "exponent_n3"]
     fig, ax = plt.subplots()
     plt.plot(net, accuracy, color="b")
     plt.scatter(net, accuracy, color="r", marker="v")

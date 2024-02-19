@@ -8,12 +8,12 @@ import numpy as np
 import pandas as pd
 from wfdb import processing
 from tqdm import tqdm
-from scipy.stats.stats import pearsonr
+from scipy.stats import pearsonr
 
 parser = argparse.ArgumentParser("Authentication", add_help=False)
 parser.add_argument(
     "--data_path",
-    default="../storage/ssd/public/guoxin/physionet.org/files/ptbdb/1.0.0",
+    default="../storage/ssd/public/guoxin/physionet.org/files/ptbdb/1.0.0/",
     type=str,
     help="dataset path",
 )
@@ -101,7 +101,7 @@ def dataGeneration(data_path, csv_path, record_path):
                     end_ind = corrected_qrs_inds[i + 1] + window_size_half + 1
                     sig = processing.normalize_bound(signal[start_ind:end_ind], -1, 1)
                     signal_temp = np.concatenate((signal_temp, sig))
-                record_temp = record_temp.append(
+                record_temp = record_temp._append(
                     pd.DataFrame(signal_temp.reshape(-1, signal_temp.shape[0])),
                     ignore_index=True,
                     sort=False,
@@ -109,7 +109,7 @@ def dataGeneration(data_path, csv_path, record_path):
                 record_temp["label"] = record_name
                 record_temp["record"] = record_name
                 # add it to final dataset
-                dataset = dataset.append(record_temp, ignore_index=True, sort=False)
+                dataset = dataset._append(record_temp, ignore_index=True, sort=False)
     else:
         patient_folders = [
             i
@@ -189,7 +189,7 @@ def dataGeneration(data_path, csv_path, record_path):
                             signal[start_ind:end_ind], -1, 1
                         )
                         signal_temp = np.concatenate((signal_temp, sig))
-                    record_temp = record_temp.append(
+                    record_temp = record_temp._append(
                         pd.DataFrame(signal_temp.reshape(-1, signal_temp.shape[0])),
                         ignore_index=True,
                         sort=False,
@@ -197,16 +197,11 @@ def dataGeneration(data_path, csv_path, record_path):
                     record_temp["label"] = patient_name
                     record_temp["record"] = record_name
                     # add it to final dataset
-                    dataset = dataset.append(record_temp, ignore_index=True, sort=False)
+                    dataset = dataset._append(record_temp, ignore_index=True, sort=False)
     # save for further use
     dataset.to_csv(csv_path, index=False)
     print("processing completed")
 
 
 if __name__ == "__main__":
-    dataset_name = "ptb-diagnostic-ecg-database-1.0.0"
-    record_path = "patient"
-    # root path
-    data_path = "dataset/" + dataset_name + "/"
-    csv_path = "dataset_processed/" + dataset_name + ".csv"
-    dataGeneration(data_path, csv_path, record_path)
+    dataGeneration(args.data_path, args.output_path, args.prefix)
