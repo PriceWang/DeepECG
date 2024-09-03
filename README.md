@@ -73,7 +73,7 @@ The whole project contains three different methods to rebuild the model and exec
 
     Or you can download the pre-processed dataset from the link:
 
-    [PTB Processed Dataset]([https://drive.google.com/file/d/1W1LkLuK3uwxJskv_1KAMDvivPbCyGgU4/view?usp=sharing](https://huggingface.co/datasets/PriceWang/dataset/resolve/main/deepecg/ptbdb_prt.csv)
+    [PTB Processed Dataset](https://huggingface.co/datasets/PriceWang/dataset/resolve/main/deepecg/ptbdb_prt.csv)
 
 - Step 2: CNN Modelling
 
